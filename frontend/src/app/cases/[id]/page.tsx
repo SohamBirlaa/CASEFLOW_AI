@@ -5,6 +5,16 @@ import Link from "next/link";
 import { fetchFromBackend } from "@/lib/api";
 import { CaseResponse } from "@/types/case";
 
+function formatDateTime(value?: string | null) {
+  if (!value) return "Never";
+
+  return new Date(value + "Z").toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export default function CaseDetailsPage({ 
   params 
 }: { 
@@ -108,12 +118,12 @@ export default function CaseDetailsPage({
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-500">Created At</span>
-              <span className="font-medium text-slate-700">{new Date(caseData.created_at).toLocaleString()}</span>
+              <span className="font-medium text-slate-700">{formatDateTime(caseData.created_at)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Last Updated</span>
               <span className="font-medium text-slate-700">
-                {caseData.updated_at ? new Date(caseData.updated_at).toLocaleString() : "Never"}
+              {formatDateTime(caseData.updated_at)}
               </span>
             </div>
             <div className="flex justify-between">

@@ -13,7 +13,7 @@ from app.database import engine, Base
 
 import app.models 
 
-from app.routers import cases
+from app.routers import cases, documents
 
 # Ensure the physical upload directory exists on server startup
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
@@ -35,6 +35,7 @@ app.add_middleware(
 )
 
 app.include_router(cases.router)
+app.include_router(documents.router)
 
 # Simplified Phase 1 health check
 @app.get("/api/health")
