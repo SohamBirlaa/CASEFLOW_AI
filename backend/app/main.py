@@ -12,6 +12,8 @@ from app.database import engine, Base
 
 import app.models 
 
+from app.routers import cases
+
 # Automatic SQLite table schema generation for MVP scope
 try:
     Base.metadata.create_all(bind=engine)
@@ -34,6 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(cases.router)
 
 # Simplified Phase 1 health check
 @app.get("/api/health")
