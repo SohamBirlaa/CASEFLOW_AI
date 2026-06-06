@@ -69,3 +69,6 @@ Thumbs.db
 dist/
 build/
 coverage/
+
+
+backend/uploads/

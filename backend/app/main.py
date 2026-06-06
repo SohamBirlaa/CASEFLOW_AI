@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,12 +15,8 @@ import app.models
 
 from app.routers import cases
 
-# Automatic SQLite table schema generation for MVP scope
-try:
-    Base.metadata.create_all(bind=engine)
-except Exception as e:
-    print(f"Database initialization warning: {e}")
-
+# Ensure the physical upload directory exists on server startup
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
 # Automatic SQLite table schema generation for MVP scope
 try:

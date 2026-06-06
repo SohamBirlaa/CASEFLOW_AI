@@ -1,9 +1,8 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import enum
 
-# Strict application-layer validation choices
 class CaseStatus(str, enum.Enum):
     NEW = "New"
     IN_PROGRESS = "In Progress"
@@ -16,10 +15,28 @@ class CasePriority(str, enum.Enum):
     MEDIUM = "Medium"
     HIGH = "High"
 
-# Shared properties across all Case schemas
+# --- Document Schemas ---
+class DocumentBase(BaseModel):
+    filename: str
+    mime_type: str
+    file_size_bytes: int
+
+class DocumentCreate(DocumentBase):
+    case_id: int
+    file_path: str
+
+class DocumentResponse(DocumentBase):
+    id: int
+    case_id: int
+    uploaded_at: datetime
+    is_archived: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Case Schemas ---
 class CaseBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=255, description="The title of the case")
-    client_name: str = Field(..., min_length=1, max_length=255, description="Associated client name")
+    title: str = Field(..., min_length=1, max_length=255)
+    client_name: str = Field(..., min_length=1, max_length=255)
     case_type: Optional[str] = Field(None, max_length=100)
     priority: CasePriority = CasePriority.MEDIUM
     assigned_owner: Optional[str] = Field(None, max_length=255)
@@ -27,11 +44,9 @@ class CaseBase(BaseModel):
     status: CaseStatus = CaseStatus.NEW
     notes: Optional[str] = None
 
-# Schema strictly for creation (inherits base requirements)
 class CaseCreate(CaseBase):
     pass
 
-# Schema strictly for updating (all fields become optional)
 class CaseUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     client_name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -43,12 +58,13 @@ class CaseUpdate(BaseModel):
     notes: Optional[str] = None
     is_archived: Optional[bool] = None
 
-# Schema for outgoing data (includes DB-generated fields)
 class CaseResponse(CaseBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime]
     is_archived: bool
+    
+    # Attached documents mapped with the safe default_factory per approval
+    documents: List[DocumentResponse] = Field(default_factory=list)
 
-    # Allows Pydantic to read data directly from the SQLAlchemy ORM model
     model_config = ConfigDict(from_attributes=True)
