@@ -3,6 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+from app.database import engine, Base
+
+# Add this line so the metadata registry detects the Case model
+
+import app.models 
+
+# Automatic SQLite table schema generation for MVP scope
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Database initialization warning: {e}")
+
+
 # Automatic SQLite table schema generation for MVP scope
 try:
     Base.metadata.create_all(bind=engine)
