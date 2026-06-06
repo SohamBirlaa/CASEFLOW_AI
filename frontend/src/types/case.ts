@@ -33,3 +33,15 @@ export enum CaseStatus {
     updated_at?: string | null;
     is_archived: boolean;
   }
+
+  // Data allowed for updating an existing case
+export interface CaseUpdate {
+    title?: string;
+    client_name?: string;
+    case_type?: string | null;
+    priority?: CasePriority;
+    assigned_owner?: string | null;
+    due_date?: string | null;
+    status?: CaseStatus;
+    notes?: string | null;
+  }
