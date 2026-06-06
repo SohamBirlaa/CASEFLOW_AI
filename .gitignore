@@ -1,0 +1,71 @@
+# =========================
+
+# Python / uv
+
+# =========================
+
+backend/.venv/
+backend/**pycache**/
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+
+# Environment files
+
+backend/.env
+
+# Database
+
+backend/*.db
+backend/*.sqlite3
+
+# Logs
+
+backend/logs/
+*.log
+
+# uv
+
+backend/.python-version
+
+# =========================
+
+# Next.js
+
+# =========================
+
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Environment files
+
+frontend/.env.local
+
+# =========================
+
+# OS Files
+
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+
+# IDE
+
+# =========================
+
+.vscode/
+.idea/
+
+# =========================
+
+# Build
+
+# =========================
+
+dist/
+build/
+coverage/
