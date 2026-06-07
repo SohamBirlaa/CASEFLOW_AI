@@ -1,15 +1,22 @@
+
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchFromBackend } from "@/lib/api";
-import { CaseCreate, CaseStatus, CasePriority } from "@/types/case";
+import { CaseCreate, CaseStatus, CasePriority, CaseResponse } from "@/types/case";
+
+const MAX_UPLOAD_SIZE_MB = 10;
 
 export default function CreateCasePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // File upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState<CaseCreate>({
     title: "",
@@ -25,20 +32,45 @@ export default function CreateCasePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file && file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
+      alert(`File exceeds ${MAX_UPLOAD_SIZE_MB}MB limit.`);
+      e.target.value = ""; // Reset input
+      setSelectedFile(null);
+      return;
+    }
+    setSelectedFile(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await fetchFromBackend("/api/cases/", {
+      // 1. Create the Case
+      const createdCase = await fetchFromBackend<CaseResponse>("/api/cases/", {
         method: "POST",
         body: JSON.stringify(formData),
       });
-      // Redirect to the list view upon successful creation
-      router.push("/cases");
+
+      // 2. Upload the Document (if selected)
+      if (selectedFile) {
+        const docFormData = new FormData();
+        docFormData.append("file", selectedFile);
+        
+        await fetchFromBackend(`/api/cases/${createdCase.id}/documents/`, {
+          method: "POST",
+          body: docFormData,
+          isFormData: true,
+        });
+      }
+
+      // 3. Redirect to the new Case Details view
+      router.push(`/cases/${createdCase.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create case.");
+      setError(err instanceof Error ? err.message : "Failed to create case or upload document.");
       setIsSubmitting(false);
     }
   };
@@ -96,12 +128,18 @@ export default function CreateCasePage() {
             <textarea name="notes" value={formData.notes || ""} onChange={handleChange} rows={4} className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Add initial notes here..."></textarea>
           </div>
 
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <label className="text-sm font-medium text-slate-700 block mt-4">Initial Document (Optional)</label>
+            <p className="text-xs text-slate-500 mb-2">Upload a starting PDF or TXT file for this case.</p>
+            <input type="file" onChange={handleFileChange} accept=".pdf,.txt" className="w-full border border-slate-300 rounded-lg p-2 text-sm text-slate-600 bg-slate-50" />
+          </div>
+
           <div className="pt-4 flex justify-end space-x-3 border-t border-slate-100">
             <Link href="/cases" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
               Cancel
             </Link>
             <button type="submit" disabled={isSubmitting} className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 transition-colors">
-              {isSubmitting ? "Saving..." : "Create Case"}
+              {isSubmitting ? "Creating Case..." : "Create Case"}
             </button>
           </div>
         </form>
