@@ -21,8 +21,9 @@ class Case(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_archived = Column(Boolean, default=False, index=True)
 
-    # One-to-Many Relationship: A Case can have multiple documents
+    # Bidirectional Relationships
     documents = relationship("Document", back_populates="case", cascade="all, delete-orphan")
+    ai_analyses = relationship("AIAnalysis", back_populates="case", cascade="all, delete-orphan")
 
 
 class Document(Base):
@@ -39,5 +40,29 @@ class Document(Base):
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
     is_archived = Column(Boolean, default=False, index=True)
 
-    # Reverse relationship back to the Case
+    # Bidirectional Relationships
     case = relationship("Case", back_populates="documents")
+    ai_analyses = relationship("AIAnalysis", back_populates="document", cascade="all, delete-orphan")
+
+
+class AIAnalysis(Base):
+    __tablename__ = "ai_analyses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    case_id = Column(Integer, ForeignKey("cases.id"), nullable=False, index=True)
+    document_id = Column(Integer, ForeignKey("documents.id"), nullable=True, index=True)
+    
+    analysis_type = Column(String(20), nullable=False) 
+    
+    summary = Column(Text, nullable=True)
+    parties = Column(Text, nullable=True)
+    key_dates = Column(Text, nullable=True)
+    obligations = Column(Text, nullable=True)
+    action_items = Column(Text, nullable=True)
+    risks = Column(Text, nullable=True)
+    
+    analyzed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Bidirectional Relationships
+    case = relationship("Case", back_populates="ai_analyses")
+    document = relationship("Document", back_populates="ai_analyses")

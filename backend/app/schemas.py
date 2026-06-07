@@ -15,6 +15,10 @@ class CasePriority(str, enum.Enum):
     MEDIUM = "Medium"
     HIGH = "High"
 
+class AIAnalysisType(str, enum.Enum):
+    DOCUMENT = "document"
+    CASE = "case"
+
 # --- Document Schemas ---
 class DocumentBase(BaseModel):
     filename: str
@@ -64,7 +68,28 @@ class CaseResponse(CaseBase):
     updated_at: Optional[datetime]
     is_archived: bool
     
-    # Attached documents mapped with the safe default_factory per approval
     documents: List[DocumentResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+# --- AI Analysis Schemas ---
+class AIAnalysisBase(BaseModel):
+    analysis_type: AIAnalysisType
+    summary: Optional[str] = None
+    parties: Optional[str] = None
+    key_dates: Optional[str] = None
+    obligations: Optional[str] = None
+    action_items: Optional[str] = None
+    risks: Optional[str] = None
+
+class AIAnalysisCreate(AIAnalysisBase):
+    case_id: int
+    document_id: Optional[int] = None
+
+class AIAnalysisResponse(AIAnalysisBase):
+    id: int
+    case_id: int
+    document_id: Optional[int] = None
+    analyzed_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
